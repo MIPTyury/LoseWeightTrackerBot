@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "loseweighttrackbot",
+  "private_key_id": "d7bf5bfe3d2a0bd2bd5284fc989cf1cedeb10e94",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDewzqbtIWGXSKf\nkJRH0rawWXrVKrFoTHcznhYNfGWp+aRs2fgR51I7jM41JMDBmExrOddqqXMaMzkf\n1q/RUTSxbO2aYXkN32nuwQ4VROvEfB/wDARz9LEDuSMOiuxdFaEWOAeLcmTTNf1j\nJTB9IieZrOY0K/LXrwhYa24bBDqA/cjPyaa1CZfyxWfu1sNMj3makVlzZgdgFVjj\nLzv3fDp61UPedYNV6KGdtTNI5EzS4xcIpKMfdVNRaoBrU2myc8usuuf6pQfJdxIL\nrMAYALoZ2ZgYlG3i1NLKj8JxecoutHUPIJQSnFdpmoU7NUHCtgFx5ueLw6w1JS1D\nGotNvAkDAgMBAAECggEAOJlbDU/HM1X7o5Y9DqirsU/y5TGFRO5UxSEwEjoerJrY\n261gGdBv9OB4TklpzmaPWBkoshmevLPyGjRWlLTw0fnOvxBwDQXMaRTVKrNJwjEV\nfkzXXsz3ou4Jybqjhp0lwjr3M8ebdYy8tlGvKcQhUqr7DJt0Brgawzh8j9G5uacI\nPFRwbCoj5vLMUWo5ayxIMw8EUzy7stEa6JpNrmJEbBA/YKS4yLjjgITPoM3FAhff\nftnp4Q5tFET2YjdPei461EVv39sLfCOpCwlZ/pu5A5Y5HPZjOD0Q+ym1at1FQ/aD\nkag7RePEgpdxJUdDDweserk81iYdJGj3QfdRiVXOTQKBgQD66C9nj9Vu+pLa+ZYp\n74q+b3R0gZpc0piJP84bO+5WeMFw0ujMfk39fxJ8YpvaVq/BxD2NFVXOcp66WsP8\n6d63+BnAhHMz8ERD4HCsmv/KXTE4/eCducjHIC+pwHYx/fTpDfev3fFgvnCjJGel\nDE9A/lc8N5QqWDuk4vdC0sF0zQKBgQDjSMtRCf+eT2VJ0v+ZtAJVseDAx+5plNjW\nGYpnFMUzmhPVPsomWcHy7Zxe0++K1Py1OmsuAg/9POo4Ms2Gc1aLCdnjvhG8nZF1\nz8DcXY99azvATbKqOxOLcWOGC6f8kEkc5OHhSl4aUrPQoObGMdnXYCfoxdK8c+3l\nd1IU3hb1DwKBgQCDkM6SsmRLjk8FTczE7pvFIfJhyTflJnTfuzpbI4DljOp6O83g\ntPY2T7SkzpxE0CHXLAzOdvqIh6fdtgyBCS1FMG5oecti18EkCoNqrtgkB9vws4dd\njXbPm3wCui4AJteOgUl4yZtxjErJ8SP78sl4HiYmKEqkLaIQ4wae3p6cnQKBgE1o\n8J6ESkRwBC51p8qAzb7EG6ltLt1U7dlVz5a2M0gU9SZPAWi4b18+4GBHzLE7Q2qy\nH+kGmM2GXruPSgK9677lNwnjJYVZIT6/6I7lasarrCkeDXj/L/PxRZVVCPzzY4Ns\nzSX/Pze17TpkYtUkC27YeB9GqTS4Q1FBJ3ql/amvAoGADJiO0itvgZnt1qQg7Zj1\nqtsrE3KJL5t3MOociGeJTkeq6VQFxvC7dfz/IUfWKpDRP2PzMN+7xWyssORXmIMK\nksxGG/F5IE9G4sYP66xEZtJP/AS4RliqVLBHaVLaSg0rRVLAD2Fus/IJyrX86vmA\nYhxYdUqjiLvBwHZI8VO+wwM=\n-----END PRIVATE KEY-----\n",
+  "client_email": "loseweighttrackbot@loseweighttrackbot.iam.gserviceaccount.com",
+  "client_id": "113486761414510808931",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/loseweighttrackbot%40loseweighttrackbot.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
