@@ -259,6 +259,7 @@ def insert_end_date(message, id, param):
     bot.register_next_step_handler_by_chat_id(message.chat.id, plot_collector, id, param, start_date)
 
 def plot_collector(message, id, param, start_date):
+    bot.send_message(message.chat.id, f'График строится. Подождите немного')
     date = start_date
     a = collect_data(date, id)
     if a == -2:
