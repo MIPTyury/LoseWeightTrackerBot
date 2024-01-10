@@ -10,9 +10,9 @@ import helper as h
 from matplotlib import pyplot as plt
 
 # Токен вашего Telegram-бота
-#BOT_TOKEN = '6390329177:AAGDCqaBc3dsqJmzGlOKgf8j3_ZjxANt4nA' #основа
+BOT_TOKEN = '6390329177:AAGDCqaBc3dsqJmzGlOKgf8j3_ZjxANt4nA' #основа
 #BOT_TOKEN = '6523054368:AAEB4mPGXMHcygOCmxUBxxujtQ1MPCZNwQM' #юра
-BOT_TOKEN = '6939782498:AAG3ONAuKGlBHsUT-Wd1g-q_pBmDzz9eyB0' #сеня
+#BOT_TOKEN = '6939782498:AAG3ONAuKGlBHsUT-Wd1g-q_pBmDzz9eyB0' #сеня
 
 # Инициализация Telegram-бота
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -43,10 +43,15 @@ def start(message):
         bot.send_message(chat_id, 'создана таблица')
 
     markup = telebot.types.InlineKeyboardMarkup()
-    markup.add(telebot.types.InlineKeyboardButton('Добавить данные в таблицу', callback_data='/add'))
-    markup.add(telebot.types.InlineKeyboardButton('Посмотреть данные таблицы', callback_data='/view'))
-    markup.add(telebot.types.InlineKeyboardButton('Удалить таблицу', callback_data='/delete_table'))
-    markup.add(telebot.types.InlineKeyboardButton('Удалить последнюю записанную строку', callback_data='/remove_last'))
+    markup.add(telebot.types.InlineKeyboardButton('Добавить данные', callback_data='/add'))
+    markup.add(telebot.types.InlineKeyboardButton('Посмотреть данные (свои или друга)', callback_data='/view'))
+    markup.add(telebot.types.InlineKeyboardButton('Построить график (свой или друга)', callback_data='/plot'))
+    markup.add(telebot.types.InlineKeyboardButton('Удалить последнюю записанную строку (удаляет сразу, подтверждения действия не предусмотрено)', callback_data='/remove_last'))
+    markup.add(telebot.types.InlineKeyboardButton('Удалить таблицу (удаляет сразу, подтверждения действия не предусмотрено)', callback_data='/delete_table'))
+
+    if (message.chat.id == 128687811 or message.chat.id == 314165610):
+        markup.add(telebot.types.InlineKeyboardButton('Посмотреть список таблиц и их создателей (функция админов)', callback_data='/check_tables'))
+
     # markup.add(telebot.types.InlineKeyboardButton('Посмотреть данные таблицы другого человека (NA)', callback_data='/view_other'))
     # markup.add(telebot.types.InlineKeyboardButton('Построить график параметра (NA)', callback_data='/plot'))
     # markup.add(telebot.types.InlineKeyboardButton('Построить график параметра другого человека (NA)', callback_data='/plot_other'))
@@ -64,6 +69,10 @@ def callback_query(call):
         delete_table(call.message)
     elif call.data == '/remove_last':
         remove_last(call.message)
+    elif call.data == '/plot':
+        plot(call.message)
+    elif call.data == '/check_tables':
+        check_tables(call.message)
 
 @bot.message_handler(commands=['add'])
 def add(message):
@@ -212,20 +221,17 @@ def insert_parametr(message):
         if i != 'Желаемый вес':
             titels += i + '\n'
     bot.send_message(message.chat.id, titels)
-    print(id)
     bot.register_next_step_handler_by_chat_id(message.chat.id, insert_start_date, id)
 
 def insert_start_date(message, id):
     param = message.text
     bot.send_message(message.chat.id, f'Введите дату начала')
-    print(param)
     bot.register_next_step_handler_by_chat_id(message.chat.id, insert_end_date, id, param)
 
 def insert_end_date(message, id, param):
     start_date = list(map(int, reversed(message.text.split('.'))))
     start_date = datetime.date(start_date[0], start_date[1], start_date[2])
     bot.send_message(message.chat.id, f'Введите дату кончала')
-    print(start_date)
     bot.register_next_step_handler_by_chat_id(message.chat.id, plot_collector, id, param, start_date)
 
 def plot_collector(message, id, param, start_date):
@@ -243,7 +249,6 @@ def plot_collector(message, id, param, start_date):
         date += datetime.timedelta(days= 1)
     for i in date_ls:
         data.append(collect_data(i, id)[find_index(param, dicti)])
-    print(data)
     plot_builder(message, date_ls, list(map(float, data)), param, id)
 
 def plot_builder(message, x, y, param, id):
@@ -274,8 +279,15 @@ def check_tables(message):
     if chat_id == 128687811 or chat_id == 314165610:
         tables = []
         for i in client.openall():
-            tables.append({'title': i.title, 'id': i.id})
-        print(tables)
-        bot.send_message(chat_id, str(tables))
+            tables.append({'title': i.title, 'id': i.id, 'name':bot.get_chat(int(i.title)).first_name, 'link': '@' + str(bot.get_chat(int(i.title)).username)})
+
+        response = ''
+
+        for i in tables:
+            for j in i:
+                response += j + ': ' + i[j] + '\n'
+            response += '\n'
+
+        bot.send_message(chat_id, response)
 
 bot.polling(none_stop=True, interval=0)
