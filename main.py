@@ -10,9 +10,9 @@ import helper as h
 from matplotlib import pyplot as plt
 
 # Токен вашего Telegram-бота
-BOT_TOKEN = '6390329177:AAGDCqaBc3dsqJmzGlOKgf8j3_ZjxANt4nA' #основа
-#BOT_TOKEN = '6523054368:AAEB4mPGXMHcygOCmxUBxxujtQ1MPCZNwQM' #юра
-#BOT_TOKEN = '6939782498:AAG3ONAuKGlBHsUT-Wd1g-q_pBmDzz9eyB0' #сеня
+BOT_TOKEN = '6390329177:AAGDCqaBc3dsqJmzGlOKgf8j3_ZjxANt4nA'  # основа
+# BOT_TOKEN = '6523054368:AAEB4mPGXMHcygOCmxUBxxujtQ1MPCZNwQM' #юра
+# BOT_TOKEN = '6939782498:AAG3ONAuKGlBHsUT-Wd1g-q_pBmDzz9eyB0' #сеня
 
 # Инициализация Telegram-бота
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -21,12 +21,11 @@ scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis
 creds = ServiceAccountCredentials.from_json_keyfile_name('loseweighttrackbot-d7bf5bfe3d2a.json', scope)
 client = gspread.authorize(creds)
 
-dicti = {'Дата':["", 0], 'Вес': ["кг", 0],'Правая ляха': ["см", 0],'Левая ляха': ["см", 0], 'Правая бицуха': ["см", 0],
+dicti = {'Дата': ["", 0], 'Вес': ["кг", 0], 'Правая ляха': ["см", 0], 'Левая ляха': ["см", 0],
+         'Правая бицуха': ["см", 0],
          'Левая бицуха': ["см", 0], 'Правая икра': ["см", 0], 'Левая икра': ["см", 0], 'Шея': ["см", 0],
          'Талия': ["см", 0], 'Желаемый вес': ["кг", 0], 'Рост': ["см", 0], 'ИМТ': ["кг/м^2", 0],
          'Осталось до цели': ["кг", 0], 'Процент жира': ["%", 0]}
-
-height = 173
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -46,11 +45,16 @@ def start(message):
     markup.add(telebot.types.InlineKeyboardButton('Добавить данные', callback_data='/add'))
     markup.add(telebot.types.InlineKeyboardButton('Посмотреть данные (свои или друга)', callback_data='/view'))
     markup.add(telebot.types.InlineKeyboardButton('Построить график (свой или друга)', callback_data='/plot'))
-    markup.add(telebot.types.InlineKeyboardButton('Удалить последнюю записанную строку (удаляет сразу, подтверждения действия не предусмотрено)', callback_data='/remove_last'))
-    markup.add(telebot.types.InlineKeyboardButton('Удалить таблицу (удаляет сразу, подтверждения действия не предусмотрено)', callback_data='/delete_table'))
+    markup.add(telebot.types.InlineKeyboardButton(
+        'Удалить последнюю записанную строку (удаляет сразу, подтверждения действия не предусмотрено)',
+        callback_data='/remove_last'))
+    markup.add(
+        telebot.types.InlineKeyboardButton('Удалить таблицу (удаляет сразу, подтверждения действия не предусмотрено)',
+                                           callback_data='/delete_table'))
 
     if (message.chat.id == 128687811 or message.chat.id == 314165610):
-        markup.add(telebot.types.InlineKeyboardButton('Посмотреть список таблиц и их создателей (функция админов)', callback_data='/check_tables'))
+        markup.add(telebot.types.InlineKeyboardButton('Посмотреть список таблиц и их создателей (функция админов)',
+                                                      callback_data='/check_tables'))
 
     # markup.add(telebot.types.InlineKeyboardButton('Посмотреть данные таблицы другого человека (NA)', callback_data='/view_other'))
     # markup.add(telebot.types.InlineKeyboardButton('Построить график параметра (NA)', callback_data='/plot'))
@@ -86,7 +90,7 @@ def add(message):
 def add_support(message, index):
     chat_id = message.chat.id
     bot.send_message(chat_id, f'Введите {list(dicti.keys())[index]} в {list(dicti.values())[index][0]}')
-    bot.register_next_step_handler_by_chat_id(chat_id, set_data,  index)
+    bot.register_next_step_handler_by_chat_id(chat_id, set_data, index)
 
 def set_data(message, index):
     chat_id = message.chat.id
@@ -98,12 +102,14 @@ def set_data(message, index):
         add_support(message, index + 1)
     elif index == 11:
         categ = list(dicti.keys())[12]
-        dicti[categ][1] = round(float(list(dicti.values())[1][1]) / ((float(list(dicti.values())[11][1]) / 100)**2), 1)
+        dicti[categ][1] = round(float(list(dicti.values())[1][1]) / ((float(list(dicti.values())[11][1]) / 100) ** 2),
+                                1)
 
         neck = float(list(dicti.values())[8][1])
         waist = float(list(dicti.values())[9][1])
         categ = list(dicti.keys())[14]
-        dicti[categ][1] = round(495 / (1.0324 - 0.19077 * np.log10(waist - neck) + 0.15456 * np.log10(float(list(dicti.values())[11][1]))) - 450, 1)
+        dicti[categ][1] = round(495 / (1.0324 - 0.19077 * np.log10(waist - neck) + 0.15456 * np.log10(
+            float(list(dicti.values())[11][1]))) - 450, 1)
 
         categ = list(dicti.keys())[13]
         dicti[categ][1] = round(float(list(dicti.values())[1][1]) - float(list(dicti.values())[10][1]), 1)
@@ -167,15 +173,22 @@ def view_support_by_id(message):
         id = chat_id
     else:
         id = message.text
+        try:
+            client.open(f'{id}').sheet1
+        except Exception as e:
+            bot.send_message(chat_id, f'Для пользователя с id: {id} нет таблицы, попробуйте ввести другой')
+            bot.register_next_step_handler_by_chat_id(chat_id, view_support_by_id)
+            return
     bot.send_message(chat_id, f'Введите {list(dicti.keys())[0]}')
     bot.register_next_step_handler_by_chat_id(chat_id, get_data_by_id, id)
 
 def get_data_by_id(message, id):
-
     data = collect_data(message.text, id)
 
     if data == -1:
-        bot.send_message(message.chat.id, f'на дату {message.text} нет данных')
+        bot.send_message(message.chat.id, f'на дату {message.text} нет данных, попробуйте другую')
+        bot.register_next_step_handler_by_chat_id(message.chat.id, get_data_by_id, id)
+        return
     else:
         response = ''
         for i in range(len(list(dicti.keys()))):
@@ -187,34 +200,41 @@ def get_data_by_id(message, id):
         bot.send_message(message.chat.id, response)
 
 def collect_data(date, id):
-    sheet = client.open(f'{id}').sheet1
-    dates = sheet.col_values(1)
-    index = -1
-    for i in range(len(dates)):
-        if dates[i] == date:
-            index = i
-    if index == -1:
-        return -1
+    try:
+        sheet = client.open(f'{id}').sheet1
+        dates = sheet.col_values(1)
+        index = -1
+        for i in range(len(dates)):
+            if dates[i] == date:
+                index = i
+        if index == -1:
+            return -1
 
-    data = sheet.row_values(index + 1)
+        data = sheet.row_values(index + 1)
 
-    return data
+        return data
+    except Exception as e:
+        return -2
 
 @bot.message_handler(commands=['plot'])
 def plot(message):
     insert_plot_id(message)
 
-
 def insert_plot_id(message):
     bot.send_message(message.chat.id, f'Введите id друга или 0, если хотите посмотреть свои данные')
     bot.register_next_step_handler_by_chat_id(message.chat.id, insert_parametr)
-
 
 def insert_parametr(message):
     if message.text == '0':
         id = message.chat.id
     else:
         id = message.text
+        try:
+            client.open(f'{id}').sheet1
+        except Exception as e:
+            bot.send_message(message.chat.id, f'Для данного пользователя нет таблицы, попробуйте ещё раз')
+            bot.register_next_step_handler_by_chat_id(message.chat.id, insert_parametr)
+            return
     bot.send_message(message.chat.id, f'Введите параметр, график которого вы хотите построить')
     titels = ''
     for i in list(dicti.keys())[1:]:
@@ -225,8 +245,12 @@ def insert_parametr(message):
 
 def insert_start_date(message, id):
     param = message.text
-    bot.send_message(message.chat.id, f'Введите дату начала')
-    bot.register_next_step_handler_by_chat_id(message.chat.id, insert_end_date, id, param)
+    if param not in dicti.keys():
+        bot.send_message(message.chat.id, f'Такого параметра нет, введите ещё раз')
+        bot.register_next_step_handler_by_chat_id(message.chat.id, insert_start_date, id)
+    else:
+        bot.send_message(message.chat.id, f'Введите дату начала')
+        bot.register_next_step_handler_by_chat_id(message.chat.id, insert_end_date, id, param)
 
 def insert_end_date(message, id, param):
     start_date = list(map(int, reversed(message.text.split('.'))))
@@ -237,6 +261,8 @@ def insert_end_date(message, id, param):
 def plot_collector(message, id, param, start_date):
     date = start_date
     a = collect_data(date, id)
+    if a == -2:
+        return
     data = []
     date_ls = []
     end_date = list(map(int, reversed(message.text.split('.'))))
@@ -246,9 +272,13 @@ def plot_collector(message, id, param, start_date):
         date = date.strftime('%d.%m.%Y')
         date_ls.append(date)
         date = datetime.datetime.strptime(date, '%d.%m.%Y')
-        date += datetime.timedelta(days= 1)
+        date += datetime.timedelta(days=1)
     for i in date_ls:
-        data.append(collect_data(i, id)[find_index(param, dicti)])
+        temp = collect_data(i, id)
+        if temp == -1:
+            bot.send_message(message.chat.id, f'на {i} нет данных')
+            return
+        data.append(temp[find_index(param, dicti)])
     plot_builder(message, date_ls, list(map(float, data)), param, id)
 
 def plot_builder(message, x, y, param, id):
@@ -269,17 +299,15 @@ def find_index(param, dict):
             index = i
     return index
 
-
-
-
-#Служебная команда только для админа
+# Служебная команда только для админа
 @bot.message_handler(commands=['check_tables'])
 def check_tables(message):
     chat_id = message.chat.id
     if chat_id == 128687811 or chat_id == 314165610:
         tables = []
         for i in client.openall():
-            tables.append({'title': i.title, 'id': i.id, 'name':bot.get_chat(int(i.title)).first_name, 'link': '@' + str(bot.get_chat(int(i.title)).username)})
+            tables.append({'title': i.title, 'id': i.id, 'name': bot.get_chat(int(i.title)).first_name,
+                           'link': '@' + str(bot.get_chat(int(i.title)).username)})
 
         response = ''
 
@@ -289,5 +317,6 @@ def check_tables(message):
             response += '\n'
 
         bot.send_message(chat_id, response)
+
 
 bot.polling(none_stop=True, interval=0)
