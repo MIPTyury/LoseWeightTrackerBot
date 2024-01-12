@@ -27,6 +27,7 @@ dicti = {'Дата': ["", 0], 'Вес': ["кг", 0], 'Правая ляха': ["
          'Талия': ["см", 0], 'Желаемый вес': ["кг", 0], 'Рост': ["см", 0], 'ИМТ': ["кг/м^2", 0],
          'Осталось до цели': ["кг", 0], 'Процент жира': ["%", 0]}
 
+is_ready = True
 @bot.message_handler(commands=['start'])
 def start(message):
     chat_id = message.chat.id
@@ -65,21 +66,23 @@ def start(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
-    if call.data == '/add':
+    if call.data == '/add' and is_ready:
         add(call.message)
-    elif call.data == '/view':
+    elif call.data == '/view' and is_ready:
         view(call.message)
-    elif call.data == '/delete_table':
+    elif call.data == '/delete_table' and is_ready:
         delete_table(call.message)
-    elif call.data == '/remove_last':
+    elif call.data == '/remove_last' and is_ready:
         remove_last(call.message)
-    elif call.data == '/plot':
+    elif call.data == '/plot' and is_ready:
         plot(call.message)
-    elif call.data == '/check_tables':
+    elif call.data == '/check_tables' and is_ready:
         check_tables(call.message)
 
 @bot.message_handler(commands=['add'])
 def add(message):
+    global is_ready
+    is_ready = False
     chat_id = message.chat.id
     try:
         client.open(f'{chat_id}').sheet1
@@ -96,7 +99,24 @@ def set_data(message, index):
     chat_id = message.chat.id
     if index != -1:
         categ = list(dicti.keys())[index]
-        dicti[categ][1] = message.text
+        if index == 0:
+            try:
+                # Попытка преобразовать строку в дату
+                date = datetime.datetime.strptime(message.text, "%d.%m.%Y")
+                print("Строка содержит действительную дату:", date)
+                dicti[categ][1] = message.text
+            except ValueError:
+                print("Строка НЕ содержит действительную дату")
+                bot.send_message(chat_id, "Напишите дату в формате дд.мм.гггг")
+                bot.register_next_step_handler_by_chat_id(chat_id, set_data, index)
+                return
+        elif index > 0 and index < 11:
+            if str(message.text).replace('.', '').isdigit() and len(str(message.text).replace('.', '')) < 5:
+                dicti[categ][1] = message.text
+            else:
+                bot.send_message(chat_id, "Вводить надо числа с разделителем в виде точки")
+                bot.register_next_step_handler_by_chat_id(chat_id, set_data, index)
+                return
 
     if index < 11 and index != -1:
         add_support(message, index + 1)
@@ -122,6 +142,8 @@ def set_data(message, index):
         sheet = client.open(f'{chat_id}').sheet1
         sheet.append_row(data)
         bot.send_message(chat_id, 'Данные введены')
+        global is_ready
+        is_ready= True
 
 @bot.message_handler(commands=['delete_table'])
 def delete_table(message):
@@ -153,8 +175,24 @@ def remove_last(message):
     except:
         bot.send_message(chat_id, 'Для вас ещё нет таблицы, напишите /start')
 
+# @bot.message_handler(commands=['view_last'])
+# def view_last(message):
+#     chat_id = message.chat.id
+#     try:
+#         sheet = client.open(f'{chat_id}').sheet1
+#         try:
+#             test = sheet.get_all_values()
+#             data = collect_data(sheet.row_values(len(test)), chat_id)
+#             bot.send_message()
+#         except:
+#             bot.send_message(chat_id, 'В таблице нет записей, вы можете их добавить с помощью /add')
+#     except:
+#         bot.send_message(chat_id, 'Для вас ещё нет таблицы, напишите /start')
+
 @bot.message_handler(commands=['view'])
 def view(message):
+    global is_ready
+    is_ready = False
     chat_id = message.chat.id
     try:
         client.open(f'{chat_id}').sheet1
@@ -174,7 +212,10 @@ def view_support_by_id(message):
     else:
         id = message.text
         try:
-            client.open(f'{id}').sheet1
+            sheet = client.open(f'{id}').sheet1
+            check_data = sheet.get_all_values()
+            if len(check_data) == 1:
+                bot.send_message(chat_id, "Пользователь не ввел никакие данные, для добавления есть команда /add")
         except Exception as e:
             bot.send_message(chat_id, f'Для пользователя с id: {id} нет таблицы, попробуйте ввести другой')
             bot.register_next_step_handler_by_chat_id(chat_id, view_support_by_id)
@@ -186,6 +227,16 @@ def get_data_by_id(message, id):
     data = collect_data(message.text, id)
 
     if data == -1:
+        try:
+            # Попытка преобразовать строку в дату
+            date = datetime.datetime.strptime(message.text, "%d.%m.%Y")
+            print("Строка содержит действительную дату:", date)
+            dicti["Дата"][1] = message.text
+        except ValueError:
+            print("Строка НЕ содержит действительную дату")
+            bot.send_message(message.chat.id, "Напишите дату в формате дд.мм.гггг")
+            bot.register_next_step_handler_by_chat_id(message.chat.id, get_data_by_id, id)
+            return
         bot.send_message(message.chat.id, f'на дату {message.text} нет данных, попробуйте другую')
         bot.register_next_step_handler_by_chat_id(message.chat.id, get_data_by_id, id)
         return
@@ -198,6 +249,8 @@ def get_data_by_id(message, id):
             response += item
         print(response)
         bot.send_message(message.chat.id, response)
+        global is_ready
+        is_ready = True
 
 def collect_data(date, id):
     try:
@@ -218,6 +271,8 @@ def collect_data(date, id):
 
 @bot.message_handler(commands=['plot'])
 def plot(message):
+    global is_ready
+    is_ready = False
     insert_plot_id(message)
 
 def insert_plot_id(message):
@@ -292,6 +347,8 @@ def plot_builder(message, x, y, param, id):
     plt.grid()
     fig.savefig('plot.png')
     bot.send_photo(message.chat.id, photo=open('plot.png', 'rb'), caption='ваш график')
+    global is_ready
+    is_ready = True
 
 def find_index(param, dict):
     index = 1
