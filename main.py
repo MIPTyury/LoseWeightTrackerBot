@@ -119,6 +119,7 @@ def set_data(message, index):
         categ = list(dicti.keys())[index]
         if index == 0:
                 if not check_date_type(message):
+                    bot.send_message(chat_id, 'дату необходимо вводить в формате дд.мм.гггг')
                     bot.register_next_step_handler_by_chat_id(chat_id, set_data, index)
                     return
                 else:
@@ -135,14 +136,16 @@ def set_data(message, index):
         add_support(message, index + 1)
     elif index == 11:
         categ = list(dicti.keys())[12]
-        dicti[categ][1] = round(float(list(dicti.values())[1][1]) / ((float(list(dicti.values())[11][1]) / 100) ** 2),
+        if float(list(dicti.values())[11][1]) != 0:
+            dicti[categ][1] = round(float(list(dicti.values())[1][1]) / ((float(list(dicti.values())[11][1]) / 100) ** 2),
                                 1)
 
         neck = float(list(dicti.values())[8][1])
         waist = float(list(dicti.values())[9][1])
         categ = list(dicti.keys())[14]
-        dicti[categ][1] = round(495 / (1.0324 - 0.19077 * np.log10(waist - neck) + 0.15456 * np.log10(
-            float(list(dicti.values())[11][1]))) - 450, 1)
+        if waist - neck != 0 and float(list(dicti.values())[11][1]) != 0:
+            dicti[categ][1] = round(495 / (1.0324 - 0.19077 * np.log10(waist - neck) + 0.15456 * np.log10(
+                float(list(dicti.values())[11][1]))) - 450, 1)
 
         categ = list(dicti.keys())[13]
         dicti[categ][1] = round(float(list(dicti.values())[1][1]) - float(list(dicti.values())[10][1]), 1)
