@@ -78,6 +78,14 @@ def callback_query(call):
         plot(call.message)
     elif call.data == '/check_tables' and is_ready:
         check_tables(call.message)
+def parser(data):
+    response = ''
+    for i in range(len(list(dicti.keys()))):
+        keys = list(dicti.keys())
+        values = list(dicti.values())
+        item = f'{keys[i]}: {data[i]} {values[i][0]}\n'
+        response += item
+    return(response)
 
 @bot.message_handler(commands=['add'])
 def add(message):
@@ -175,20 +183,43 @@ def remove_last(message):
     except:
         bot.send_message(chat_id, 'Для вас ещё нет таблицы, напишите /start')
 
-# @bot.message_handler(commands=['view_last'])
-# def view_last(message):
-#     chat_id = message.chat.id
-#     try:
-#         sheet = client.open(f'{chat_id}').sheet1
-#         try:
-#             test = sheet.get_all_values()
-#             data = collect_data(sheet.row_values(len(test)), chat_id)
-#             bot.send_message()
-#         except:
-#             bot.send_message(chat_id, 'В таблице нет записей, вы можете их добавить с помощью /add')
-#     except:
-#         bot.send_message(chat_id, 'Для вас ещё нет таблицы, напишите /start')
+@bot.message_handler(commands=['view_last'])
+def view_last(message):
+    chat_id = message.chat.id
+    try:
+        sheet = client.open(f'{chat_id}').sheet1
+        try:
+            test = sheet.get_all_values()
+            print(len(test))
+            if len(test) != 1:
+                data = collect_data(list(sheet.row_values(len(test)))[0], chat_id)
+                print(data)
+                bot.send_message(chat_id, parser(data))
+            else:
+                bot.send_message(chat_id, 'хуй')
+        except:
+            bot.send_message(chat_id, 'В таблице нет записей, вы можете их добавить с помощью /add')
+    except:
+        bot.send_message(chat_id, 'Для вас ещё нет таблицы, напишите /start')
 
+@bot.message_handler(commands=['view_first'])
+def view_first(message):
+    chat_id = message.chat.id
+    try:
+        sheet = client.open(f'{chat_id}').sheet1
+        try:
+            test = sheet.get_all_values()
+            print(len(test))
+            if len(test) != 1:
+                data = collect_data(list(sheet.row_values(2))[0], chat_id)
+                print(data)
+                bot.send_message(chat_id, parser(data))
+            else:
+                bot.send_message(chat_id, 'хуй')
+        except:
+            bot.send_message(chat_id, 'В таблице нет записей, вы можете их добавить с помощью /add')
+    except:
+        bot.send_message(chat_id, 'Для вас ещё нет таблицы, напишите /start')
 @bot.message_handler(commands=['view'])
 def view(message):
     global is_ready
@@ -241,13 +272,7 @@ def get_data_by_id(message, id):
         bot.register_next_step_handler_by_chat_id(message.chat.id, get_data_by_id, id)
         return
     else:
-        response = ''
-        for i in range(len(list(dicti.keys()))):
-            keys = list(dicti.keys())
-            values = list(dicti.values())
-            item = f'{keys[i]}: {data[i]} {values[i][0]}\n'
-            response += item
-        print(response)
+        response = parser(data)
         bot.send_message(message.chat.id, response)
         global is_ready
         is_ready = True
