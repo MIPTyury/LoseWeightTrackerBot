@@ -87,6 +87,18 @@ def parser(data):
         response += item
     return(response)
 
+def check_date_type(message):
+    try:
+        # Попытка преобразовать строку в дату
+        date = datetime.datetime.strptime(message.text, "%d.%m.%Y")
+        print("Строка содержит действительную дату:", date)
+        dicti['Дата'][1] = message.text
+        return True
+    except ValueError:
+        print("Строка НЕ содержит действительную дату")
+        bot.send_message(message.chat.id, "Напишите дату в формате дд.мм.гггг")
+        return False
+
 @bot.message_handler(commands=['add'])
 def add(message):
     global is_ready
@@ -108,16 +120,9 @@ def set_data(message, index):
     if index != -1:
         categ = list(dicti.keys())[index]
         if index == 0:
-            try:
-                # Попытка преобразовать строку в дату
-                date = datetime.datetime.strptime(message.text, "%d.%m.%Y")
-                print("Строка содержит действительную дату:", date)
-                dicti[categ][1] = message.text
-            except ValueError:
-                print("Строка НЕ содержит действительную дату")
-                bot.send_message(chat_id, "Напишите дату в формате дд.мм.гггг")
-                bot.register_next_step_handler_by_chat_id(chat_id, set_data, index)
-                return
+                if check_date_type(message):
+                    bot.register_next_step_handler_by_chat_id(chat_id, set_data, index)
+                    return
         elif index > 0 and index < 11:
             if str(message.text).replace('.', '').isdigit() and len(str(message.text).replace('.', '')) < 5:
                 dicti[categ][1] = message.text
@@ -333,34 +338,42 @@ def insert_start_date(message, id):
         bot.register_next_step_handler_by_chat_id(message.chat.id, insert_end_date, id, param)
 
 def insert_end_date(message, id, param):
-    start_date = list(map(int, reversed(message.text.split('.'))))
-    start_date = datetime.date(start_date[0], start_date[1], start_date[2])
-    bot.send_message(message.chat.id, f'Введите дату кончала')
-    bot.register_next_step_handler_by_chat_id(message.chat.id, plot_collector, id, param, start_date)
+    if check_date_type(message):
+        start_date = list(map(int, reversed(message.text.split('.'))))
+        start_date = datetime.date(start_date[0], start_date[1], start_date[2])
+        bot.send_message(message.chat.id, f'Введите дату кончала')
+        bot.register_next_step_handler_by_chat_id(message.chat.id, plot_collector, id, param, start_date)
+    else:
+        bot.send_message(message.chat.id, "Напишите дату в формате дд.мм.гггг")
+        bot.register_next_step_handler_by_chat_id(message.chat.id, insert_start_date, id, param)
 
 def plot_collector(message, id, param, start_date):
-    bot.send_message(message.chat.id, f'График строится. Подождите немного')
     date = start_date
     a = collect_data(date, id)
     if a == -2:
         return
     data = []
     date_ls = []
-    end_date = list(map(int, reversed(message.text.split('.'))))
-    end_date = datetime.date(end_date[0], end_date[1], end_date[2])
-    interval = (end_date - start_date).days
-    for i in range(interval):
-        date = date.strftime('%d.%m.%Y')
-        date_ls.append(date)
-        date = datetime.datetime.strptime(date, '%d.%m.%Y')
-        date += datetime.timedelta(days=1)
-    for i in date_ls:
-        temp = collect_data(i, id)
-        if temp == -1:
-            bot.send_message(message.chat.id, f'на {i} нет данных')
-            return
-        data.append(temp[find_index(param, dicti)])
-    plot_builder(message, date_ls, list(map(float, data)), param, id)
+    if check_date_type(message):
+        bot.send_message(message.chat.id, f'График строится. Подождите немного')
+        end_date = list(map(int, reversed(message.text.split('.'))))
+        end_date = datetime.date(end_date[0], end_date[1], end_date[2])
+        interval = (end_date - start_date).days
+        for i in range(interval):
+            date = date.strftime('%d.%m.%Y')
+            date_ls.append(date)
+            date = datetime.datetime.strptime(date, '%d.%m.%Y')
+            date += datetime.timedelta(days=1)
+        for i in date_ls:
+            temp = collect_data(i, id)
+            if temp == -1:
+                bot.send_message(message.chat.id, f'на {i} нет данных')
+                return
+            data.append(temp[find_index(param, dicti)])
+        plot_builder(message, date_ls, list(map(float, data)), param, id)
+    else:
+        bot.send_message(message.chat.id, "Напишите дату в формате дд.мм.гггг")
+        bot.register_next_step_handler_by_chat_id(message.chat.id, plot_collector, id, param, start_date)
 
 def plot_builder(message, x, y, param, id):
     fig = plt.figure(figsize=(12, 8), dpi=400)
