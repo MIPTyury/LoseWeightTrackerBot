@@ -92,11 +92,9 @@ def check_date_type(message):
         # Попытка преобразовать строку в дату
         date = datetime.datetime.strptime(message.text, "%d.%m.%Y")
         print("Строка содержит действительную дату:", date)
-        dicti['Дата'][1] = message.text
         return True
     except ValueError:
         print("Строка НЕ содержит действительную дату")
-        bot.send_message(message.chat.id, "Напишите дату в формате дд.мм.гггг")
         return False
 
 @bot.message_handler(commands=['add'])
@@ -120,9 +118,11 @@ def set_data(message, index):
     if index != -1:
         categ = list(dicti.keys())[index]
         if index == 0:
-                if check_date_type(message):
+                if not check_date_type(message):
                     bot.register_next_step_handler_by_chat_id(chat_id, set_data, index)
                     return
+                else:
+                    dicti['Дата'][1] = message.text
         elif index > 0 and index < 11:
             if str(message.text).replace('.', '').isdigit() and len(str(message.text).replace('.', '')) < 5:
                 dicti[categ][1] = message.text
@@ -345,7 +345,7 @@ def insert_end_date(message, id, param):
         bot.register_next_step_handler_by_chat_id(message.chat.id, plot_collector, id, param, start_date)
     else:
         bot.send_message(message.chat.id, "Напишите дату в формате дд.мм.гггг")
-        bot.register_next_step_handler_by_chat_id(message.chat.id, insert_start_date, id, param)
+        bot.register_next_step_handler_by_chat_id(message.chat.id, insert_end_date, id, param)
 
 def plot_collector(message, id, param, start_date):
     date = start_date
