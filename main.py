@@ -124,7 +124,7 @@ def set_data(message, index):
                     return
                 else:
                     dicti['Дата'][1] = message.text
-        elif index > 0 and index < 11:
+        elif index > 0 and index <= 11:
             if str(message.text).replace('.', '').isdigit() and len(str(message.text).replace('.', '')) < 5:
                 dicti[categ][1] = message.text
             else:
