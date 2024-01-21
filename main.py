@@ -97,8 +97,8 @@ def check_date_type(message):
         print("Строка НЕ содержит действительную дату")
         return False
 
-def get_data(message, param):
-    sheet = client.open(f'{message.chat.id}').sheet1
+def get_data(id, param):
+    sheet = client.open(f'{id}').sheet1
     data = sheet.get_all_values()
     index = find_index(param, dicti)
     dates = []
@@ -370,12 +370,15 @@ def plot_collector(message, id, param, start_date):
     data = []
     date_ls = []
     if check_date_type(message):
-        bot.send_message(message.chat.id, f'График строится. Подождите немного')
         end_date = message.text
-        data = get_data(message, param)
+        data = get_data(id, param)
         x = list(data.keys())
         y = list(map(float, list(data.values())))
+        if (len(x) == 0 or len(y) == 0):
+            bot.send_message(message.chat.id, 'Вы не вводили данные, пожалуйста введите их с помощью команды /add')
+            return
         try:
+            bot.send_message(message.chat.id, f'График строится. Подождите немного')
             start_index = x.index(start_date)
             end_index = x.index(end_date) + 1
         except Exception as e:
