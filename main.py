@@ -66,8 +66,8 @@ def start(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
-    if call.data == '/add' and is_ready:
-        add(call.message)
+    if call.data == '/add_ext' and is_ready:
+        add_ext(call.message)
     elif call.data == '/view' and is_ready:
         view(call.message)
     elif call.data == '/delete_table' and is_ready:
@@ -110,23 +110,23 @@ def get_data(id, param):
         dict_data[dates[i]] = data[i][index]
     return dict_data
 
-@bot.message_handler(commands=['add'])
-def add(message):
+@bot.message_handler(commands=['add_ext'])
+def add_ext(message):
     global is_ready
     is_ready = False
     chat_id = message.chat.id
     try:
         client.open(f'{chat_id}').sheet1
-        add_support(message, 0)
+        add_ext_support(message, 0)
     except:
         bot.send_message(chat_id, 'Для вас ещё нет таблицы, напишите /start')
 
-def add_support(message, index):
+def add_ext_support(message, index):
     chat_id = message.chat.id
     bot.send_message(chat_id, f'Введите {list(dicti.keys())[index]} в {list(dicti.values())[index][0]}')
     bot.register_next_step_handler_by_chat_id(chat_id, set_data, index)
 
-def set_data(message, index):
+def set_data_ext(message, index):
     chat_id = message.chat.id
     if index != -1:
         categ = list(dicti.keys())[index]
@@ -146,7 +146,7 @@ def set_data(message, index):
                 return
 
     if index < 11 and index != -1:
-        add_support(message, index + 1)
+        add_ext_support(message, index + 1)
     elif index == 11:
         categ = list(dicti.keys())[12]
         if float(list(dicti.values())[11][1]) != 0:
@@ -163,11 +163,68 @@ def set_data(message, index):
         categ = list(dicti.keys())[13]
         dicti[categ][1] = round(float(list(dicti.values())[1][1]) - float(list(dicti.values())[10][1]), 1)
 
-        set_data(message, -1)
+        set_data_ext(message, -1)
     else:
         data = []
         for i in dicti.values():
             data.append(i[1])
+        sheet = client.open(f'{chat_id}').sheet1
+        sheet.append_row(data)
+        bot.send_message(chat_id, 'Данные введены')
+        global is_ready
+        is_ready = True
+
+@bot.message_handler(commands=['add'])
+def add(message):
+    global is_ready
+    is_ready = False
+    chat_id = message.chat.id
+    try:
+        sheet = client.open(f'{chat_id}').sheet1
+        test = sheet.get_all_values()
+        pivot_data = []
+        if len(test) != 1:
+            pivot_data = collect_data(list(sheet.row_values(len(test)))[0], chat_id)
+            print('check----', pivot_data)
+            add_support(message, 0, pivot_data)
+    except:
+        bot.send_message(chat_id, 'Для вас ещё нет таблицы, напишите /start')
+
+def add_support(message, index, data):
+    chat_id = message.chat.id
+    bot.send_message(chat_id, f'Введите {list(dicti.keys())[index]} в {list(dicti.values())[index][0]}')
+    bot.register_next_step_handler_by_chat_id(chat_id, set_data, index, data)
+
+def set_data(message, index, data):
+    chat_id = message.chat.id
+    if index != -1:
+        if index == 0:
+                if not check_date_type(message):
+                    bot.send_message(chat_id, 'дату необходимо вводить в формате дд.мм.гггг')
+                    bot.register_next_step_handler_by_chat_id(chat_id, set_data, index)
+                    return
+                else:
+                    data[0] = message.text
+
+        elif index == 1:
+            if str(message.text).replace('.', '').isdigit() and len(str(message.text).replace('.', '')) < 5:
+                data[1] = message.text
+            else:
+                bot.send_message(chat_id, "Вводить надо числа с разделителем в виде точки")
+                bot.register_next_step_handler_by_chat_id(chat_id, set_data, index)
+                return
+
+    if index < 1 and index != -1:
+        add_support(message, index + 1, data)
+    elif index == 1:
+        if float(data[11]) != 0:
+            data[12] = round(float(data[1]) / ((float(data[11]) / 100) ** 2),
+                                1)
+
+        data[13] = round(float(data[1]) - float(data[10]), 1)
+
+        set_data(message, -1, data)
+    else:
         sheet = client.open(f'{chat_id}').sheet1
         sheet.append_row(data)
         bot.send_message(chat_id, 'Данные введены')
