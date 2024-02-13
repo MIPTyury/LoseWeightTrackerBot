@@ -124,7 +124,7 @@ def add_ext(message):
 def add_ext_support(message, index):
     chat_id = message.chat.id
     bot.send_message(chat_id, f'Введите {list(dicti.keys())[index]} в {list(dicti.values())[index][0]}')
-    bot.register_next_step_handler_by_chat_id(chat_id, set_ext_data, index)
+    bot.register_next_step_handler_by_chat_id(chat_id, set_data_ext, index)
 
 def set_data_ext(message, index):
     chat_id = message.chat.id
