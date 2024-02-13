@@ -187,6 +187,8 @@ def add(message):
             pivot_data = collect_data(list(sheet.row_values(len(test)))[0], chat_id)
             print('check----', pivot_data)
             add_support(message, 0, pivot_data)
+        else:
+            bot.send_message(message.chat.id, 'У вас нет предыдущих данных \nЗаполните, используя /add_ext')
     except:
         bot.send_message(chat_id, 'Для вас ещё нет таблицы, напишите /start')
 
@@ -371,6 +373,54 @@ def collect_data(date, id):
         return data
     except Exception as e:
         return -2
+
+@bot.message_handler(commands=['predict'])
+def predict(message):
+    chat_id = message.chat.id
+    bot.send_message(chat_id, 'Введите дату, до которой вы хотите посмотреть прогноз')
+    bot.register_next_step_handler_by_chat_id(chat_id, predictor_plot)
+
+def predictor_plot(message):
+    chat_id = message.chat.id
+    sheet = client.open(f'{chat_id}').sheet1
+    test = sheet.get_all_values()
+    dates = []
+    weight = []
+    for i in range(1, len(test)):
+        dates.append(test[i][0])
+        weight.append(round(float(test[i][1]), 2))
+    delta = (datetime.datetime.strptime(dates[-1], '%d.%m.%Y') - datetime.datetime.strptime(dates[1], '%d.%m.%Y')).days
+
+    x = np.arange(1, delta + 3)
+    y = weight
+    print('lens', len(x), len(y))
+    print(x, y, sep='\n')
+    coef = np.polyfit(x[-15:-1], y[-15:-1], 1)
+    y_opt = coef[0] * x[-15:-1] + coef[1]
+    print(coef)
+    for i in range(len(y_opt)):
+        y_opt[i] = round(y_opt[i], 2)
+    if check_date_type(message) == False:
+        bot.send_message(message.chat.id, 'Дату введите правильно дд.мм.гггг')
+        bot.register_next_step_handler_by_chat_id(chat_id, predictor_plot)
+    else:
+        new_delta = (datetime.datetime.strptime(message.text, '%d.%m.%Y') - datetime.datetime.strptime(dates[-1], '%d.%m.%Y')).days
+        x_opt = np.arange(1, delta + 3 + new_delta)
+        y_pred = coef[0]*x_opt + coef[1]
+        for i in range(len(y_pred)):
+            y_pred[i] = round(y_pred[i], 2)
+
+        for i in range(new_delta):
+            dates.append((datetime.datetime.strptime(dates[-1], '%d.%m.%Y') + datetime.timedelta(days=1)).strftime('%d.%m.%Y'))
+
+        print(y_pred, dates, sep='\n')
+        output = 0
+        for i in range(len(x_opt)):
+            if dates[i] == message.text:
+                output = y_pred[i]
+
+        bot.send_message(message.chat.id, f'{message.text} ожидается, что будет {output} Кг')
+
 
 @bot.message_handler(commands=['plot'])
 def plot(message):
