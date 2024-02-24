@@ -11,8 +11,8 @@ from matplotlib import pyplot as plt
 
 # Токен вашего Telegram-бота
 BOT_TOKEN = '6390329177:AAGDCqaBc3dsqJmzGlOKgf8j3_ZjxANt4nA'  # основа
-# BOT_TOKEN = '6523054368:AAEB4mPGXMHcygOCmxUBxxujtQ1MPCZNwQM' #юра
-# BOT_TOKEN = '6939782498:AAG3ONAuKGlBHsUT-Wd1g-q_pBmDzz9eyB0' #сеня
+# BOT_TOKEN = '6523054368:AAEB4mPGXMHcygOCmxUBxxujtQ1MPCZNwQM' # юра
+# BOT_TOKEN = '6939782498:AAG3ONAuKGlBHsUT-Wd1g-q_pBmDzz9eyB0' # сеня
 
 # Инициализация Telegram-бота
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -21,7 +21,7 @@ scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis
 creds = ServiceAccountCredentials.from_json_keyfile_name('loseweighttrackbot-d7bf5bfe3d2a.json', scope)
 client = gspread.authorize(creds)
 
-dicti = {'Дата': ["", 0], 'Вес': ["кг", 0], 'Правая ляха': ["см", 0], 'Левая ляха': ["см", 0],
+dicti = {'Дата': ["формате дд.мм.гггг", 0], 'Вес': ["кг", 0], 'Правая ляха': ["см", 0], 'Левая ляха': ["см", 0],
          'Правая бицуха': ["см", 0],
          'Левая бицуха': ["см", 0], 'Правая икра': ["см", 0], 'Левая икра': ["см", 0], 'Шея': ["см", 0],
          'Талия': ["см", 0], 'Желаемый вес': ["кг", 0], 'Рост': ["см", 0], 'ИМТ': ["кг/м^2", 0],
@@ -57,9 +57,6 @@ def start(message):
         markup.add(telebot.types.InlineKeyboardButton('Посмотреть список таблиц и их создателей (функция админов)',
                                                       callback_data='/check_tables'))
 
-    # markup.add(telebot.types.InlineKeyboardButton('Посмотреть данные таблицы другого человека (NA)', callback_data='/view_other'))
-    # markup.add(telebot.types.InlineKeyboardButton('Построить график параметра (NA)', callback_data='/plot'))
-    # markup.add(telebot.types.InlineKeyboardButton('Построить график параметра другого человека (NA)', callback_data='/plot_other'))
     bot.send_message(message.chat.id,
                      text=f'Привет, {name}, я бот, помогающий отслеживать прогресс от похудения и тренировок',
                      reply_markup=markup)
