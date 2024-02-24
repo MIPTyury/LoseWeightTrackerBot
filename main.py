@@ -536,7 +536,17 @@ def check_tables(message):
                 response += j + ': ' + i[j] + '\n'
             response += '\n'
 
-        bot.send_message(chat_id, response)
+        response = response.split('\n\n')
+
+        response_part = ''
+
+        for i in range(len(response)):
+            if i % 10 != 9:
+                response_part += response[i] + '\n'
+            else:
+                bot.send_message(chat_id, response_part)
+                response_part = ''
+
 
 
 bot.polling(none_stop=True, interval=0)
