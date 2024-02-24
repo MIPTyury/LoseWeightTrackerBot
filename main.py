@@ -21,7 +21,7 @@ scope = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis
 creds = ServiceAccountCredentials.from_json_keyfile_name('loseweighttrackbot-d7bf5bfe3d2a.json', scope)
 client = gspread.authorize(creds)
 
-dicti = {'Дата': ["формате дд.мм.гггг", 0], 'Вес': ["кг", 0], 'Правая ляха': ["см", 0], 'Левая ляха': ["см", 0],
+dicti = {'Дата': ["", 0], 'Вес': ["кг", 0], 'Правая ляха': ["см", 0], 'Левая ляха': ["см", 0],
          'Правая бицуха': ["см", 0],
          'Левая бицуха': ["см", 0], 'Правая икра': ["см", 0], 'Левая икра': ["см", 0], 'Шея': ["см", 0],
          'Талия': ["см", 0], 'Желаемый вес': ["кг", 0], 'Рост': ["см", 0], 'ИМТ': ["кг/м^2", 0],
@@ -58,7 +58,7 @@ def start(message):
                                                       callback_data='/check_tables'))
 
     bot.send_message(message.chat.id,
-                     text=f'Привет, {name}, я бот, помогающий отслеживать прогресс от похудения и тренировок',
+                     text=f'Привет, {name}, я бот, помогающий отслеживать прогресс от похудения и тренировок. Для описания всех команд напишите /help',
                      reply_markup=markup)
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -75,6 +75,14 @@ def callback_query(call):
         plot(call.message)
     elif call.data == '/check_tables' and is_ready:
         check_tables(call.message)
+
+@bot.message_handler(commands=['help'])
+def help(message):
+    chat_id = message.chat.id
+    text = '/start - старт бота\n/help - описание всех функций\n/add_ext - добавить данные (если в первый раз добавляете данные, используйте именно её)\n/add - добавление данных (работает начиная со второго дня, добавляет только дату и вес\n/plot - строит график указанного параметра от времени\n/view - просмотреть данные (свои или друга)\n/view_last - просмотреть последнюю запись\n/view_first - просмотреть первую запись\n/remove_last - удаляет последнюю запись (сразу же, при нажатии)\n/delete_table - удаляет таблицу (сразу же, при нажатии)\n'
+    bot.send_message(chat_id, text)
+
+
 def parser(data):
     response = ''
     for i in range(len(list(dicti.keys()))):
@@ -533,17 +541,9 @@ def check_tables(message):
                 response += j + ': ' + i[j] + '\n'
             response += '\n'
 
-        response = response.split('\n\n')
-
-        response_part = ''
-
-        for i in range(len(response)):
-            if i % 10 != 9:
-                response_part += response[i] + '\n'
-            else:
-                bot.send_message(chat_id, response_part)
-                response_part = ''
-
-
+        with open('users.txt', 'w', encoding='utf-8') as file:
+            file.writelines(response)
+            
+        bot.send_document(chat_id, document=open('users.txt', 'rb'))
 
 bot.polling(none_stop=True, interval=0)
